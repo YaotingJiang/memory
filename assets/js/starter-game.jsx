@@ -44,4 +44,3 @@ class Starter extends React.Component {
     }
   }
 }
-
