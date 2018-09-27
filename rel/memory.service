@@ -1,0 +1,19 @@
+[Unit]
+Description=Memory
+After=network.target
+
+[Service]
+Type=forking
+User=memory
+WorkingDirectory=/home/memory/memory
+ExecStart=/home/memory/memory/bin/memory start
+ExecStop=/home/memory/memory/bin/memory stop
+Restart=on-failure
+RestartSec=5
+Environment=PORT=4791
+Environment=LANG=en_US.UTF-8
+SyslogIdentifier=memory
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

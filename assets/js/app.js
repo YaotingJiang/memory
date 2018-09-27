@@ -45,7 +45,7 @@ class Square extends React.Component {
             id = "appjs" > ? < /div> <
             div className = "flippedOver"
             id = "appjs" > {
-              (this.props.checked ? < span > & #10004;</span> : this.props.box)} < /div> </div>
+              (this.props.checked ? <span>&#10004;</span> : this.props.box)} < /div> </div>
     )
   }
 }
