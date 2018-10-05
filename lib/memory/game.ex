@@ -60,25 +60,43 @@ defmodule Memory.Game do
     index1 = Enum.at(fl, 0).index
     index2 = Enum.at(fl, 1).index
 
-    if Enum.at(fl, 0).element == Enum.at(fl, 1).element &&
-       Enum.at(fl, 0).index != Enum.at(fl, 1).element do
+    if Enum.at(fl, 0).element == Enum.at(fl, 1).element do
+    # &&
+    #    Enum.at(fl, 0).index != Enum.at(fl, 1).element do
 
        newuplist1 = List.replace_at(up, index1, Map.put(Enum.at(up, index1), :checked, true))
                   |> List.replace_at(index2, Map.put(Enum.at(up, index2), :checked, true))
 
-       Map.put(game, :updatedTiles, newuplist1)
+       # Map.put(game, :updatedTiles, newuplist1)
+       #       |> Map.put(:flippedTiles, [])
        # IO.puts inspect(game)
+
+       %{
+         updatedTiles: newuplist1,
+         flippedTiles: [],
+         score: 0,
+       }
     else
 
       newuplist2 = List.replace_at(up, index1, Map.put(Enum.at(up, index1), :flipped, false))
                  |> List.replace_at(index2, Map.put(Enum.at(up, index2), :flipped, false))
 
-      Map.put(game, :updatedTiles, newuplist2)
-            |> Map.put(:flippedTiles, [])
+      # Map.put(game, :updatedTiles, newuplist2)
+      #       |> Map.put(:flippedTiles, [])
+
+      %{
+        updatedTiles: newuplist2,
+        flippedTiles: [],
+        score: 0,
+      }
     end
 
-    Map.put(game, :updatedTiles, game.updatedTiles)
-          |> Map.put(:flippedTiles, [])
+    # Map.put(game, :updatedTiles, game.updatedTiles)
+    #
+    # IO.puts "DEBUG"
+    # IO.puts inspect(game)
+    game
+          # |> Map.put(:flippedTiles, [])
   end
 
 
@@ -86,35 +104,25 @@ defmodule Memory.Game do
     IO.inspect(game.flippedTiles);
     if length(game.flippedTiles) == 2 do
       # Process.sleep(1000)
-      # :timer.apply_after(1000, checkMatch(game))
-      Process.send_before(checkMatch(game), :ping, 1000)
-      # game = checkMatch(game)
+
+      # IO.puts "DEBUG i=#{index}"
+      # IO.puts inspect(length([1, 2, 3]))
+      # length([1, 2, 3])
+      game = checkMatch(game)
     else
       game = pushletter(game, element, index);
       if length(game.flippedTiles) == 2 do
-        # Process.sleep(1000)
-        # :timer.apply_after(1000, checkMatch(game))
-        :timer.apply_before(1000, game = checkMatch(game))
-        # IO.puts inspect(length(game.flippedTiles))
-        # game = checkMatch(game)
+        game = checkMatch(game)
       else
-        # Process.sleep(1000)
         game
       end
     end
   end
 
-
+  #
   # def checkNotEquals(game, element, index) do
   #   if length(game.flippedTiles) != 2 do
-  #     game = pushletter(game, element, index);
-  #     if length(game.flippedTiles) == 2 do
-  #       Process.sleep(1000)
-  #       game = checkMatch(game)
-  #     else
-  #         # Process.sleep(1000)
-  #       game
-  #     end
+  #
   #   end
   # end
 
@@ -125,10 +133,10 @@ defmodule Memory.Game do
 
     fl = game.flippedTiles
 
-    newfllist = [%{index: index, element: element}]
+    newfllist = [%{index: index, element: element}] ++ fl
 
     game = Map.put(game, :updatedTiles, newuplist)
-            |> Map.put(:flippedTiles, newfllist)
+    |> Map.put(:flippedTiles, newfllist)
 
     # IO.puts "DEBUG i=#{index}"
     # IO.puts inspect(game)

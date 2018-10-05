@@ -48,37 +48,55 @@ class Gameboard extends React.Component {
                 this.setState(view.game);
               }
 
-              sendClick(element, index) {
-                console.log("sent!");
-                // this.state.updatedTiles[index].element
-                this.channel.push("checkEquals", {element: element, index: index})
-                .recieve("ok", this.gotView.bind(this))
-                .receive("checkEquals", resp => {console.log("not sending")});
-              }
 
-              resetState() {
+  sendClick(element, index) {
+    console.log("sent!");
+    this.channel.push("checkEquals", {element: element, index: index })
+    .receive("ok", this.gotView.bind(this))
+    .receive("checkMatch", this.sendCheckMatch.bind(this));
+ }
+
+  sendCheckMatch(view) {
+    this.gotView(view);
+    setTimeout(()=>{this.channel.push("checkMatch").receive("ok", this.gotView.bind(this))}, 1000);
+  }
+
+
+    resetState() {
                 this.channel.push("new").receive("ok", this.gotView.bind(this));
               }
 
-              handleClick(element, index) {
-                // console.log("element " + element, "index " + index);
-                // window.setTimeout(this.sendClick.bind(this), 1000);
-
-
-
-                element = this.state.updatedTiles[index].letter
-                console.log("element "  + element);
-                console.log("check "  + this.state.updatedTiles[index].checked);
-                console.log("flipped "  + this.state.updatedTiles[index].flipped);
-                console.log("index "  + this.state.updatedTiles[index].index);
-                // this.channel.push("checkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this));
-                // window.setTimeout(this.sendClick.bind(this), 1000);
-                // this.channel.push("checNotkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this))
-                // this.channel.push("checkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this))
-                setTimeout(()=>{this.channel.push("checkMatch", {}).receive("ok", this.gotView.bind(this))}, 1000);
-                this.channel.push("checkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this));
-                // window.setTimeout(this.sendClick.bind(this), 1000);
-              }
+              // handleClick(element, index) {
+              //   // console.log("element " + element, "index " + index);
+              //   window.setTimeout(this.sendClick.bind(this), 1000);
+              //
+              //   // if(this.state.flippedTiles.length == 2) {
+              //   //   setTimeout(()=>{this.channel.push("checkMatch", {}).receive("ok", this.gotView.bind(this))}, 1000);
+              //   // } else {
+              //   //   this.channel.push("pushletter", {element: element, index: index}).receive("ok", this.gotView.bind(this));
+              //   //   if(this.state.flippedTiles.length == 2) {
+              //   //     setTimeout(()=>{this.channel.push("checkMatch", {}).receive("ok", this.gotView.bind(this))}, 1000);
+              //   //   }
+              //   // }
+              //
+              //
+              //   element = this.state.updatedTiles[index].letter
+              //   // console.log("element "  + element);
+              //   // console.log("check "  + this.state.updatedTiles[index].checked);
+              //   // console.log("flipped "  + this.state.updatedTiles[index].flipped);
+              //   // console.log("index "  + this.state.updatedTiles[index].index);
+              //
+              //   console.log("ffff " + this.state.flippedTiles);
+              //   // this.channel.push("checkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this));
+              //   // window.setTimeout(this.sendClick.bind(this), 1000);
+              //   // this.channel.push("checNotkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this))
+              //   // this.channel.push("checkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this))
+              //   // setTimeout(()=>{this.channel.push("checkMatch", {}).receive("ok", this.gotView.bind(this))}, 1000);
+              //   this.channel.push("checkEquals", {element: element, index: index}).receive("ok", this.gotView.bind(this));
+              //   console.log("ffff22222 " + this.state.flippedTiles[0]);
+              //   console.log("ffff33333 " + this.state.flippedTiles[1]);
+              //   // window.setTimeout(this.sendClick.bind(this), 1000);
+              // }
 
 
               // lettersMatchOrNot() {
@@ -87,7 +105,7 @@ class Gameboard extends React.Component {
 
               render() {
                 let square = _.map(this.state.updatedTiles, (box, index) => {
-                  return <Square box={box.letter} click = {() => {this.handleClick(this.state.updatedTiles[index].letter, index)}}
+                  return <Square box={this.state.updatedTiles[index].letter} click = {() => {this.sendClick(this.state.updatedTiles[index].letter, index)}}
                     flipped = {this.state.updatedTiles[index].flipped} checked = {this.state.updatedTiles[index].checked} key={index} />;
                 })
 

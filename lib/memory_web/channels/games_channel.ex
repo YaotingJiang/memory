@@ -28,11 +28,10 @@ defmodule MemoryWeb.GamesChannel do
   def join("games:" <> name, payload, socket) do
       if authorized?(payload) do
         game = Memory.BackupAgent.get(name) || Game.new()
-        # game = Game.new()
         socket = socket
         |> assign(:game, game)
         |> assign(:name, game)
-        # Memory.BackupAgent.put(name, game)
+        Memory.BackupAgent.put(name, game)
         {:ok, %{"join" => name, "game" => Game.client_view(game)}, socket}
       else
         {:error, %{reason: "unauthorized"}}
@@ -41,7 +40,6 @@ defmodule MemoryWeb.GamesChannel do
 
     def handle_in("checkEquals", %{"element" => element, "index" => index}, socket) do
       game = Game.checkEquals(socket.assigns[:game], element, index)
-      # IO.inspect(game)
       socket = assign(socket, :game, game)
       Memory.BackupAgent.put(socket.assigns[:name], socket.assigns[:game])
       {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
@@ -49,22 +47,23 @@ defmodule MemoryWeb.GamesChannel do
 
     def handle_in("new", %{}, socket) do
       game = Game.new()
-      Memory.BackupAgent.put(socket, :game, game)
+      Memory.BackupAgent.put(socket.assigns[:game])
       socket = assign(socket, :game, game)
       {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
     end
 
     def handle_in("checkMatch", %{}, socket) do
-      game = Game.new()
+      game = Game.checkMatch(socket.assigns[:game])
       socket = assign(socket, :game, game)
       Memory.BackupAgent.put(socket.assigns[:name], socket.assigns[:game])
       {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
     end
 
     # def handle_in("pushletter", %{"element" => element, "index" => index}, socket) do
-    #   game = Game.new()
+    #   # game = Game.new()
+    #   game = Game.pushletter(socket.assigns[:game])
     #   socekt = assign(socket, :game, game)
-    #   # Memory.BackupAgent.put(socket.assigns[:name], socket.assigns[:game])
+    #   Memory.BackupAgent.put(socket.assigns[:name], socket.assigns[:game])
     #   {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
     # end
   # Add authorization logic here as required.
