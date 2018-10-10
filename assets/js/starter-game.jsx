@@ -29,6 +29,7 @@ constructor(props) {
     match: 0,
     selectedTile1: null,
     selectedTile2: null,
+    players: [],
     };
     this.channel.join().receive("ok", this.gotView.bind(this))
     .receive("error", resp => { console.log("Unable to join", resp)});
@@ -44,16 +45,16 @@ constructor(props) {
     .receive("ok", this.gotView.bind(this));
   }
 
+  timeOut(view) {
+    this.gotView(view);
+    setTimeout(()=>{this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))}, 1000);
+  }
+
   sendClick(tile) {
     this.channel.push("checkEquals", { tile: tile })
     .receive("ok", this.gotView.bind(this))
     .receive("matchOrNot", this.timeOut.bind(this));
  }
-
-  timeOut(view) {
-    this.gotView(view);
-    setTimeout(()=>{this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))}, 1000);
-  }
 
   render() {
     return (

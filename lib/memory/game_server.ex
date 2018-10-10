@@ -1,4 +1,4 @@
-defmodule MemoryWeb.GameServer do
+defmodule Memory.GameServer do
   use GenServer
 
   alias Memory.Game

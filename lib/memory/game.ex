@@ -23,18 +23,44 @@ defmodule Memory.Game do
      tiles: initializeTiles,
      clicks: 0,
      matchedTiles: 0,
-     card1: nil,
+     selectedTile1: nil,
      selectedTile2: nil,
+     players: %{}
    }
   end
 
-   def client_view(game) do
-     %{
+  def new(players) do
+    players = Enum.map players, fn {name, info} ->
+      {name, %{ default_player() | score: info.score || 0 }}
+    end
+    Map.put(new(), :players, Enum.into(players, %{}))
+end
+
+def default_player() do
+    %{
+      score: 0,
+      guesses: MapSet.new(),
+      cooldown: nil,
+    }
+end
+
+def get_cd(game, user) do
+    done = (get_in(game.players, [user, :cooldown]) || 0)
+    left = done - :os.system_time(:milli_seconds)
+    max(left, 0)
+end
+
+   def client_view(game, user) do
+     ps = Enum.map game.players, fn {pn, pi} ->
+      %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+      %{
        clicks: game.clicks,
        tiles: game.tiles,
        matchedTiles: game.matchedTiles,
        selectedTile1: game.selectedTile1,
        selectedTile2: game.selectedTile2,
+       players: ps,
+       cooldown: get_cd(game, user),
      }
    end
 
