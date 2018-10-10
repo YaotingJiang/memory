@@ -4,12 +4,23 @@
 
 
 
-<div class="row">
+<!-- <div class="row">
   <div class="column">
     <h1 id="index-page">Join a Game</h1>
     </script>
     <p><input type="text" id="game-input"></p>
     <p><a href="/game/memory" onClick="joinGame()">Join "Memory"</a></p>
+  </div>
+</div> -->
+
+<div class="row">
+  <div class="column">
+    <h1>Join a Game</h1>
+    <%= form_for @conn, "/join", [as: :join], fn f -> %>
+      <p>Your Name: <%= text_input f, :user %></p>
+      <p>Game Name: <%= text_input f, :game %></p>
+      <p><%= submit "Join" %>
+    <% end %>
   </div>
 </div>
 

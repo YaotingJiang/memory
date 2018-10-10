@@ -27,6 +27,7 @@ import socket from './socket';
 function start() {
   let root = document.getElementById('root');
   if (root) {
+    socket.connect();
     let channel = socket.channel("games:" + window.gameName, {});
     // We want to join in the react component.
     game_init(root, channel);

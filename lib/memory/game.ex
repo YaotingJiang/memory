@@ -1,145 +1,136 @@
 defmodule Memory.Game do
 
   def new do
-    # letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
-    # doubleletters = letters ++ letters
-    # |> Enum.with_index(1)
-    # |> Enum.map(fn {k,v}->{v,k} end)
-    # |> Map.new
-    # random = Enum.shuffle(doubleletters)
-    # update = Enum.map(random, fn {index, x} -> %{letter: x, index: index, flipped: false, checked: false} end)
-
-    update = Enum.shuffle([
-      %{letter: "A", index: 0, flipped: false, checked: false},
-      %{letter: "A", index: 1, flipped: false, checked: false},
-      %{letter: "B", index: 2, flipped: false, checked: false},
-      %{letter: "B", index: 3, flipped: false, checked: false},
-      %{letter: "C", index: 4, flipped: false, checked: false},
-      %{letter: "C", index: 5, flipped: false, checked: false},
-      %{letter: "D", index: 6, flipped: false, checked: false},
-      %{letter: "D", index: 7, flipped: false, checked: false},
-      %{letter: "E", index: 8, flipped: false, checked: false},
-      %{letter: "E", index: 9, flipped: false, checked: false},
-      %{letter: "F", index: 10, flipped: false, checked: false},
-      %{letter: "F", index: 11, flipped: false, checked: false},
-      %{letter: "G", index: 12, flipped: false, checked: false},
-      %{letter: "G", index: 13, flipped: false, checked: false},
-      %{letter: "H", index: 14, flipped: false, checked: false},
-      %{letter: "H", index: 15, flipped: false, checked: false},
-    ])
-
-    # |> Enum.shuffle(update)
-
-    %{
-      # letters: letters,
-      updatedTiles: update,
-      flippedTiles: [],
-      # doubleTiles: doubleletters,
-      # randomTiles: Enum.shuffle(letters ++ letters),
-      score: 0,
-    }
+    initializeTiles = Enum.shuffle([
+        %{letter: "A", index: 0, tileStatus: "notFlipped"},
+        %{letter: "A", index: 1, tileStatus: "notFlipped"},
+        %{letter: "B", index: 2, tileStatus: "notFlipped"},
+        %{letter: "B", index: 3, tileStatus: "notFlipped"},
+        %{letter: "C", index: 4, tileStatus: "notFlipped"},
+        %{letter: "C", index: 5, tileStatus: "notFlipped"},
+        %{letter: "D", index: 6, tileStatus: "notFlipped"},
+        %{letter: "D", index: 7, tileStatus: "notFlipped"},
+        %{letter: "E", index: 8, tileStatus: "notFlipped"},
+        %{letter: "E", index: 9, tileStatus: "notFlipped"},
+        %{letter: "F", index: 10, tileStatus: "notFlipped"},
+        %{letter: "F", index: 11, tileStatus: "notFlipped"},
+        %{letter: "G", index: 12, tileStatus: "notFlipped"},
+        %{letter: "G", index: 13, tileStatus: "notFlipped"},
+        %{letter: "H", index: 14, tileStatus: "notFlipped"},
+        %{letter: "H", index: 15, tileStatus: "notFlipped"},
+     ])
+   %{
+     tiles: initializeTiles,
+     clicks: 0,
+     matchedTiles: 0,
+     card1: nil,
+     selectedTile2: nil,
+   }
   end
 
+   def client_view(game) do
+     %{
+       clicks: game.clicks,
+       tiles: game.tiles,
+       matchedTiles: game.matchedTiles,
+       selectedTile1: game.selectedTile1,
+       selectedTile2: game.selectedTile2,
+     }
+   end
 
-
-  def client_view(game) do
-    %{
-      # letters: game.letters,
-      updatedTiles: game.updatedTiles,
-      flippedTiles: game.flippedTiles,
-      # doubleTiles: game.doubleTiles,
-      # randomTiles: game.randomTiles,
-      score: game.score,
-    }
-  end
-
-  def checkMatch(game) do
-    up = game.updatedTiles
-    fl = game.flippedTiles
-
-    index1 = Enum.at(fl, 0).index
-    index2 = Enum.at(fl, 1).index
-
-    if Enum.at(fl, 0).element == Enum.at(fl, 1).element do
-    # &&
-    #    Enum.at(fl, 0).index != Enum.at(fl, 1).element do
-
-       newuplist1 = List.replace_at(up, index1, Map.put(Enum.at(up, index1), :checked, true))
-                  |> List.replace_at(index2, Map.put(Enum.at(up, index2), :checked, true))
-
-       # Map.put(game, :updatedTiles, newuplist1)
-       #       |> Map.put(:flippedTiles, [])
-       # IO.puts inspect(game)
-
+   def matchOrNot(game) do
+       match = game.matchedTiles + 1
+       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.selectedTile1.index end)
+       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.selectedTile2.index end)
+     if game.selectedTile1.tileStatus == "flipped" && game.selectedTile2.tileStatus == "flipped" do
+       if game.selectedTile1.letter == game.selectedTile2.letter do
+         newtiles = List.replace_at(game.tiles, idx1,
        %{
-         updatedTiles: newuplist1,
-         flippedTiles: [],
-         score: 0,
-       }
-    else
+         letter: Enum.at(game.tiles, idx1).letter,
+         index: Enum.at(game.tiles, idx1).index,
+         tileStatus: "checked",
+        })
+        |>List.replace_at(idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "checked",
+        })
+        %{
+          tiles: newtiles,
+          clicks: game.clicks,
+          matchedTiles: match,
+          selectedTile1: nil,
+          selectedTile2: nil,
+         }
+       else
+         newtiles = List.replace_at(game.tiles, idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "notFlipped",
+         })
+         |>List.replace_at(idx1,
+         %{
+           letter: Enum.at(game.tiles, idx1).letter,
+           index: Enum.at(game.tiles, idx1).index,
+           tileStatus: "notFlipped",
+         })
 
-      newuplist2 = List.replace_at(up, index1, Map.put(Enum.at(up, index1), :flipped, false))
-                 |> List.replace_at(index2, Map.put(Enum.at(up, index2), :flipped, false))
-
-      # Map.put(game, :updatedTiles, newuplist2)
-      #       |> Map.put(:flippedTiles, [])
-
-      %{
-        updatedTiles: newuplist2,
-        flippedTiles: [],
-        score: 0,
-      }
-    end
-
-    # Map.put(game, :updatedTiles, game.updatedTiles)
-    #
-    # IO.puts "DEBUG"
-    # IO.puts inspect(game)
-    game
-          # |> Map.put(:flippedTiles, [])
-  end
+         %{
+           tiles: newtiles,
+           clicks: game.clicks,
+           matchedTiles: game.matchedTiles,
+           selectedTile1: nil,
+           selectedTile2: nil,
+           }
+         end
+     else
+       game
+     end
+   end
 
 
-  def checkEquals(game, element, index) do
-    IO.inspect(game.flippedTiles);
-    if length(game.flippedTiles) == 2 do
-      # Process.sleep(1000)
+   def convert_to_atom(params) do
+     for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
+   end
 
-      # IO.puts "DEBUG i=#{index}"
-      # IO.puts inspect(length([1, 2, 3]))
-      # length([1, 2, 3])
-      game = checkMatch(game)
-    else
-      game = pushletter(game, element, index);
-      if length(game.flippedTiles) == 2 do
-        game = checkMatch(game)
+   def checkEquals(game, tile) do
+    firstTile = convert_to_atom(tile)
+
+    if firstTile.tileStatus != "checked" && !(game.selectedTile1 != nil && game.selectedTile2 != nil) do
+      secondTile = Map.put(firstTile, :tileStatus, "flipped")
+      trackclick = game.clicks + 1
+      if game.selectedTile1 == nil do
+        idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == secondTile.index end)
+        newtiles = List.replace_at(game.tiles, idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "flipped",
+          })
+         Map.put(game, :tiles, newtiles)
+         |> Map.put(:clicks, trackclick)
+         |> Map.put(:selectedTile1, secondTile)
+
       else
-        game
+         if firstTile.index != game.selectedTile1.index do
+           idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == secondTile.index end)
+           newtiles = List.replace_at(game.tiles, idx2,
+           %{
+             letter: Enum.at(game.tiles, idx2).letter,
+             index: Enum.at(game.tiles, idx2).index,
+             tileStatus: "flipped",
+           })
+            Map.put(game, :tiles, newtiles)
+            |> Map.put(:clicks, trackclick)
+            |> Map.put(:selectedTile2, secondTile)
+         else
+            game
+         end
       end
+    else
+      game
     end
-  end
-
-  #
-  # def checkNotEquals(game, element, index) do
-  #   if length(game.flippedTiles) != 2 do
-  #
-  #   end
-  # end
-
-
-  def pushletter(game, element, index) do
-    up = game.updatedTiles
-    newuplist = List.replace_at(up, index, Map.put(Enum.at(up, index), :flipped, true))
-
-    fl = game.flippedTiles
-
-    newfllist = [%{index: index, element: element}] ++ fl
-
-    game = Map.put(game, :updatedTiles, newuplist)
-    |> Map.put(:flippedTiles, newfllist)
-
-    # IO.puts "DEBUG i=#{index}"
-    # IO.puts inspect(game)
-    # game
-  end
+   end
 end
