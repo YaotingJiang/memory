@@ -12,8 +12,12 @@ defmodule Memory.GameServer do
     GenServer.call(__MODULE__, {:view, game, user})
   end
 
-  def guess(game, user, letter) do
-    GenServer.call(__MODULE__, {:guess, game, user, letter})
+  def matchOrNot(game, user) do
+    GenServer.call(__MODULE__, {:matchOrNot, game, user})
+  end
+
+  def replaceTiles(game, user, tile) do
+    GenServer.call(__MODULE__, {:replaceTiles, game, user, tile})
   end
 
   ## Implementations
@@ -26,9 +30,16 @@ defmodule Memory.GameServer do
     {:reply, Game.client_view(gg, user), Map.put(state, game, gg)}
   end
 
-  def handle_call({:guess, game, user, letter}, _from, state) do
+  def handle_call({:replaceTiles, game, user, tile}, _from, state) do
     gg = Map.get(state, game, Game.new)
-    |> Game.guess(user, letter)
+    |> Game.replaceTiles(user, tile)
+    vv = Game.client_view(gg, user)
+    {:reply, vv, Map.put(state, game, gg)}
+  end
+
+  def handle_call({:matchOrNot, game, user}, _from, state) do
+    gg = Map.get(state, game, Game.new)
+    |> Game.matchOrNot(user)
     vv = Game.client_view(gg, user)
     {:reply, vv, Map.put(state, game, gg)}
   end

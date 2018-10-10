@@ -8,16 +8,16 @@ export default function game_init(root, channel) {
 }
 
 
-function MouseClick(params) {
-  let state = params.state;
-  return (<div><h1>Clicks: {state.clicks}</h1></div>);
-}
-
-
-function Restart(params) {
-  let state = params.state;
-  return(<div><button onClick={params.new}>Restart</button></div>);
-}
+// function MouseClick(params) {
+//   let state = params.state;
+//   return (<div><h1>Clicks: {state.clicks}</h1></div>);
+// }
+//
+//
+// function Restart(params) {
+//   let state = params.state;
+//   return(<div><button onClick={params.new}>Restart</button></div>);
+// }
 
 class Gameboard extends React.Component {
 constructor(props) {
@@ -26,9 +26,10 @@ constructor(props) {
     this.state = {
     clicks: 0,
     tiles: [],
-    match: 0,
-    selectedTile1: null,
-    selectedTile2: null,
+    numOfmatch: 0,
+    card1: null,
+    card2: null,
+    timeout: false,
     players: [],
     };
     this.channel.join().receive("ok", this.gotView.bind(this))
@@ -37,6 +38,12 @@ constructor(props) {
 
  gotView(view) {
   console.log("New view", view);
+  console.log(this.state.timeout);
+  //this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this));
+  if(this.state.timeout) {
+    console.log("here");
+    setTimeout(()=>{/*this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))*/}, 1000);
+  }
   this.setState(view.game);
  }
 
@@ -45,21 +52,25 @@ constructor(props) {
     .receive("ok", this.gotView.bind(this));
   }
 
-  timeOut(view) {
-    this.gotView(view);
-    setTimeout(()=>{this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))}, 1000);
-  }
+  // timeOut(view) {
+  //   this.gotView(view);
+  //   setTimeout(()=>{this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))}, 1000);
+  // }
 
   sendClick(tile) {
-    this.channel.push("checkEquals", { tile: tile })
-    .receive("ok", this.gotView.bind(this))
-    .receive("matchOrNot", this.timeOut.bind(this));
+    if(!this.state.timeout) {
+      this.channel.push("replaceTiles", { tile: tile })
+      .receive("ok", this.gotView.bind(this));
+    }
+    // this.channel.push("replaceTiles", { tile: tile })
+    // .receive("ok", this.gotView.bind(this));
+    // .receive("matchOrNot", this.timeOut.bind(this));
  }
 
   render() {
     return (
       <div>
-          <Squares state={this.state} checkEquals={this.sendClick.bind(this)} />
+          <Squares state={this.state} replaceTiles={this.sendClick.bind(this)} />
           <div className="control-panel">
             <h1>Clicks: {this.state.clicks}</h1>
             <button onClick={this.resetState.bind(this)}>Restart</button>
@@ -83,7 +94,7 @@ function Squares(params) {
            show = <span id = "questionmark">?</span>;
         }
         return(
-            <div className="tile" key={index} onClick={() => params.checkEquals(tile)}>
+            <div className="tile" key={index} onClick={() => params.replaceTiles(tile)}>
               {show}
             </div>
           )

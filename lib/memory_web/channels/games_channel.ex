@@ -27,6 +27,35 @@ defmodule MemoryWeb.GamesChannel do
     end
   end
 
+
+  def handle_in("replaceTiles", %{"tile" => tile}, socket) do
+    view = GameServer.replaceTiles(socket.assigns[:game], socket.assigns[:user], tile)
+    # game = Game.replaceTiles(socket.assigns[:game], socket.assigns[:user], tile)
+    # if game.card1 != nil && game.card2 != nil do
+    #   IO.puts("DEBUG")
+    #   IO.puts inspect(game.card1)
+    #   IO.puts inspect(game.card2)
+    #   {:reply, {:matchOrNot, %{"game" => view}}, socket}
+    #   # {:reply, {:matchOrNot, %{"game" => view)}}, socket}
+    # else
+      {:reply, {:ok, %{"game" => view}}, socket}
+    # end
+  end
+
+  def handle_in("matchOrNot", %{}, socket) do
+    view = GameServer.matchOrNot(socket.assigns[:game], socket.assigns[:user])
+    {:reply, {:ok, %{"game" => view}}, socket}
+  end
+
+
+
+  # def handle_in("matchOrNot", %{}, socket) do
+  #   game = Game.checkMatch(socket.assigns[:game])
+  #   socket = assign(socket, :game, game)
+  #   Memory.BackupAgent.put(socket.assigns[:name], socket.assigns[:game])
+  #   {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
+  # end
+
     # def handle_in("new", %{}, socket) do
     #   game = Game.new()
     #   Memory.BackupAgent.put(socket.assigns[:game])
@@ -34,7 +63,7 @@ defmodule MemoryWeb.GamesChannel do
     #   {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
     # end
 
-    # def handle_in("checkEquals", %{"tile" => tile}, socket) do
+    # def handle_in("replaceTiles", %{"tile" => tile}, socket) do
     #   game = Game.checkEquals(socket.assigns[:game], tile)
     #   socket = assign(socket, :game, game)
     #   Memory.BackupAgent.put(socket.assigns[:name], socket.assigns[:game])
