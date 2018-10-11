@@ -7,18 +7,6 @@ export default function game_init(root, channel) {
   ReactDOM.render(<Gameboard channel={channel}/>, root);
 }
 
-
-// function MouseClick(params) {
-//   let state = params.state;
-//   return (<div><h1>Clicks: {state.clicks}</h1></div>);
-// }
-//
-//
-// function Restart(params) {
-//   let state = params.state;
-//   return(<div><button onClick={params.new}>Restart</button></div>);
-// }
-
 class Gameboard extends React.Component {
 constructor(props) {
     super(props);
@@ -31,20 +19,24 @@ constructor(props) {
     card2: null,
     timeout: false,
     players: [],
+    observers: [],
     };
-    this.channel.join().receive("ok", this.gotView.bind(this))
+    // this.gotView.bind(this)
+    this.channel.join().receive("ok",
+    () => {this.channel.push("addplayer", {}).receive("ok", this.gotView.bind(this))})
     .receive("error", resp => { console.log("Unable to join", resp)});
+    this.channel.on("newview", this.gotView.bind(this))
   }
 
  gotView(view) {
   console.log("New view", view);
-  console.log(this.state.timeout);
+  console.log(`Timeout ${view.game.timeout}`);
+  this.setState(view.game);
   //this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this));
   if(this.state.timeout) {
     console.log("here");
-    setTimeout(()=>{/*this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))*/}, 1000);
+    setTimeout(()=>{this.channel.push("cooled", {}).receive("ok", this.gotView.bind(this))}, 1000);
   }
-  this.setState(view.game);
  }
 
   resetState() {
@@ -52,24 +44,33 @@ constructor(props) {
     .receive("ok", this.gotView.bind(this));
   }
 
-  // timeOut(view) {
-  //   this.gotView(view);
-  //   setTimeout(()=>{this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this))}, 1000);
-  // }
 
   sendClick(tile) {
     if(!this.state.timeout) {
       this.channel.push("replaceTiles", { tile: tile })
       .receive("ok", this.gotView.bind(this));
     }
-    // this.channel.push("replaceTiles", { tile: tile })
-    // .receive("ok", this.gotView.bind(this));
-    // .receive("matchOrNot", this.timeOut.bind(this));
  }
 
+
   render() {
+    let numplayer = this.state.players.length;
+    console.log(numplayer);
+    if(Object.keys(this.state.players).length < 2) {
+      return (<h1>Waiting others to join</h1>);
+    } else {
     return (
       <div>
+          <div className = "playerInfo">
+            <div className = "p1">
+              <p>Player1: {this.state.players[0].name}</p>
+              <p>Score: {this.state.players[0].score}</p>
+            </div>
+            <div className = "p2">
+              <p>Player2: {this.state.players[1].name}</p>
+              <p>Score: {this.state.players[1].score}</p>
+            </div>
+          </div>
           <Squares state={this.state} replaceTiles={this.sendClick.bind(this)} />
           <div className="control-panel">
             <h1>Clicks: {this.state.clicks}</h1>
@@ -78,6 +79,7 @@ constructor(props) {
       </div>
      );
     }
+  }
 }
 
 function Squares(params) {

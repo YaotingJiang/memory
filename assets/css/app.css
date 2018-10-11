@@ -36,3 +36,15 @@
   margin-top: 50px;
   margin-left: 30px;
 }
+
+.playerInfo {
+  display: flex;
+}
+
+.p1 {
+  margin-left: 30px;
+}
+
+.p2 {
+  margin-left: 60px;
+}

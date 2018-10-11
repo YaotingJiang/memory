@@ -2,17 +2,16 @@ server {
     listen 80;
     listen [::]:80;
 
-    # TODO: This should be your server name.
-    server_name hw03.yaotingjiangcs4550.pw;
+    server_name hw05.sawyerwarden.com;
 
     location / {
-        proxy_pass http://localhost:4791;
+        proxy_pass http://localhost:4793;
     }
 
     location /socket {
-        proxy_pass http://localhost:4791;
+        proxy_pass http://localhost:4793;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";	 	 
+        proxy_set_header Connection "upgrade"; 
     }
 }
