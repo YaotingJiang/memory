@@ -28,18 +28,15 @@ defmodule Memory.Game do
      card2: nil,
      timeout: false,
      players: %{},
-     # curPlayer: nil,
      observers: %{},
    }
   end
-
 
 
   def new(players) do
     players = Enum.map players, fn {name, info} ->
       {name, %{ default_player() | score: info.score || 0 }}
   end
-
     Map.put(new(), :players, Enum.into(players, %{}))
   end
 
@@ -51,15 +48,13 @@ defmodule Memory.Game do
   end
 
   def addplayer(game, user) do
-    IO.puts("Debug")
-    IO.puts inspect(Enum.count(game.players))
     newg = game
     newg = case Enum.count(game.players) do
       0 ->
         player = default_player()
         |> Map.put(:curPlayer, true)
         newplayers = Map.put(game.players, user, player)
-        IO.inspect(newplayers)
+        # IO.inspect(newplayers)
         newg = game
         |> Map.put(:players, newplayers)
 
@@ -73,8 +68,10 @@ defmodule Memory.Game do
         |> Map.put(:observers, Map.put(game.observers, user, observer))
     end
 
-    IO.inspect(newg)
-    newg
+    # IO.inspect(newg)
+    # IO.inspect(newg.players[user])
+    # newg.players[user]
+    # newg
   end
 
   #after player cooldown is up, determine state of touched cards, change turn
@@ -82,42 +79,41 @@ defmodule Memory.Game do
     #TODO change curPlayer, change card appearance if matched, otherwise flip
     idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card1.index end)
     idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card2.index end)
-    #determine if match
-    # pinfo = Map.get(game.players, user, default_player())
+
 
     newtiles = game.tiles
     if game.card1.letter == game.card2.letter do
       IO.puts("COOLED: match found")
-      newScore = game.players[user].score + 1
-
-      # pinfo
-      #   |> Map.put(:curPlayer, false)
-      # newplayers = Map.put(:players, pinfo)
+      # newScore = game.players[user].score + 1
 
 
       newtiles = List.replace_at(game.tiles, idx1,
       %{
         letter: Enum.at(game.tiles, idx1).letter,
         index: Enum.at(game.tiles, idx1).index,
-        tileStatus: "checked",#"checked",
+        tileStatus: "checked",
       }
       )
       |>List.replace_at(idx2,
       %{
         letter: Enum.at(game.tiles, idx2).letter,
         index: Enum.at(game.tiles, idx2).index,
-        tileStatus: "checked",#"checked",
+        tileStatus: "checked",
       })
+
       %{
       clicks: game.clicks,
       tiles: newtiles,
       numOfmatch: game.numOfmatch,
       card1: nil,
       card2: nil,
-      players: game.players,
       timeout: false,
-      #cooldown: get_cd(game, user),
+      players: game.players,
+      observers: game.observers,
       }
+
+      #call change turn here set the game state to be change turn
+      # changeTurn(game, 1)
     else
       IO.puts("COOLED: no match")
       newtiles = List.replace_at(game.tiles, idx1,
@@ -139,68 +135,60 @@ defmodule Memory.Game do
         numOfmatch: game.numOfmatch,
         card1: nil,
         card2: nil,
-        players: game.players,
         timeout: false,
-        #cooldown: get_cd(game, user),
+        players: game.players,
+        observers: game.observers,
       }
+
+      # changeTurn(game, 0)
     end
   end
 
-
-  #TODO if called by !curPlayer, return unchanged view
-    def client_view(game, user) do
-      IO.inspect(game)
-      if(game.timeout) do
-        game = Map.put(game, :timeout, false)
-      end
-      g = matchOrNot(game, user)
-      if(g) do
-        g = Map.put(game, :timeout, g.timeout)
-
-        ps = Enum.map g.players, fn {pn, pi} ->
-          %{ name: pn, curPlayer: pi.curPlayer, score: pi.score } end
-          IO.inspect(ps)
-
-        %{
-          clicks: g.clicks,
-          tiles: g.tiles,
-          numOfmatch: g.numOfmatch,
-          card1: g.card1,
-          card2: g.card2,
-          players: ps,
-          timeout: g.timeout,
-          #cooldown: get_cd(g, user),
-        }
+    def checkTimeOut(game) do
+      if game.card1 != nil && game.card2 != nil do
+        true
       else
+        false
+      end
+    end
+
+    def client_view(game, user) do
       ps = Enum.map game.players, fn {pn, pi} ->
-         %{ name: pn, curPlayer: pi.curPlayer, score: pi.score } end
+         %{ name: pn, score: pi.score } end
       %{
         clicks: game.clicks,
         tiles: game.tiles,
         numOfmatch: game.numOfmatch,
         card1: game.card1,
         card2: game.card2,
+        timeout: checkTimeOut(game),
         players: ps,
-        timeout: game.timeout,
-        #cooldown: get_cd(game, user),
+        observers: game.observers,
       }
-      end
+    end
+
+    def changeTurn(game, score) do
+      Map.put(game, :players, Enum.map(game, :players, fn x ->
+        %{
+          curPlayer: !x.curPlayer,
+          score: if x.curPlayer do x.score + score else x.score end,
+          }
+        end))
     end
 
   #TODO change player score if match
   def matchOrNot(game, user) do
     match = game.numOfmatch + 1
-    # pinfo = Map.get(game.players, user, default_player())
     pinfo = game.players[user]
 
-    #if pinfo.curPlayer do
+    # if pinfo.curPlayer do
 
     if(game.card1 != nil && game.card2 != nil) do
-      #Map.put(game, :timeout, false)
+
       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card1.index end)
       idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card2.index end)
       if game.card1.tileStatus == "flipped" && game.card2.tileStatus == "flipped" do
-        IO.puts("comparing cur card")
+        # IO.puts("comparing cur card")
         if game.card1.letter == game.card2.letter do
           # pinfo
           #   |> Map.put(:score, game.score + 1, :curPlayer, false)
@@ -221,16 +209,6 @@ defmodule Memory.Game do
             tileStatus: "flipped",#"checked",
           })
 
-
-          #update score
-          newScore = game.players[user].score + 1
-
-          pinfo = game.players[user]
-          |>Map.put(:score, newScore)
-
-          updatedPlayers = Map.put(game.players, user, pinfo)
-          IO.inspect(updatedPlayers)
-
           %{
             tiles: newtiles,
             clicks: game.clicks,
@@ -238,12 +216,9 @@ defmodule Memory.Game do
             card1: nil,
             card2: nil,
             timeout: true,
-            players: updatedPlayers, #game.players
+            players: game.players, #game.players
           }
         else
-          # pinfo
-          #   |> Map.put(:curPlayer, false)
-          #   newplayers = Map.put(:players, pinfo)
 
           %{
             tiles: game.tiles, #newtiles,
@@ -256,7 +231,6 @@ defmodule Memory.Game do
           }
         end
       else
-        IO.puts("not your turn")
         game
       end
     end
@@ -272,11 +246,14 @@ end
 
    def replaceTiles(game, user, tile) do
     firstTile = convert_to_atom(tile)
-    players = Map.get(game, :players, %{})
-    #pinfo = Map.get(players, user, default_player())
+
     pinfo = game.players[user]
 
-    #if pinfo.curPlayer do
+    IO.puts("Debug curplayer")
+    IO.puts inspect(game.players)
+    IO.puts inspect(pinfo)
+
+    if !pinfo.curPlayer do
       if firstTile.tileStatus != "checked" && !(game.card1 != nil && game.card2 != nil) do
         secondTile = Map.put(firstTile, :tileStatus, "flipped")
         trackclick = game.clicks + 1
@@ -308,15 +285,12 @@ end
             game
           end
         end
-      # else
-      #   game
-      # end
+      else
+        game
+      end
   else
     game
   end
 end
-
-
-
 
 end

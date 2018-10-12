@@ -32,7 +32,7 @@ constructor(props) {
   console.log("New view", view);
   console.log(`Timeout ${view.game.timeout}`);
   this.setState(view.game);
-  //this.channel.push("matchOrNot").receive("ok", this.gotView.bind(this));
+
   if(this.state.timeout) {
     console.log("here");
     setTimeout(()=>{this.channel.push("cooled", {}).receive("ok", this.gotView.bind(this))}, 1000);
