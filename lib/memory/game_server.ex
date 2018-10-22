@@ -34,7 +34,7 @@ defmodule Memory.GameServer do
     {:ok, state}
   end
 
-  def handle_cast({:join, game, user}, _from, state) do
+  def handle_call({:join, game, user}, _from, state) do
     gg = Game.addplayer(game, user)
     broadcast(Game.client_view(gg, user), game)
     {:nonreply, Map.put(state, game, gg)}

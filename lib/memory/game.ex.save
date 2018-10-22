@@ -101,12 +101,7 @@ defmodule Memory.Game do
         tileStatus: "checked",
       })
 
-        newplayers = Enum.map(game.players, fn {p, x} ->
-        {p, %{
-          curPlayer: !x.curPlayer,
-          score: if x.curPlayer do x.score + 1 else x.score end,
-          }} end)
-      newplayers2 = Enum.into(newplayers, %{})
+
 
       %{
       clicks: game.clicks,
@@ -115,7 +110,7 @@ defmodule Memory.Game do
       card1: nil,
       card2: nil,
       timeout: false,
-      players: newplayers2,
+      players: game.players,
       observers: game.observers,
       }
 
@@ -136,13 +131,6 @@ defmodule Memory.Game do
         index: Enum.at(game.tiles, idx2).index,
         tileStatus: "notFlipped",
       })
-
-      newplayers = Enum.map(game.players, fn {p, x} ->
-        {p, %{
-          curPlayer: !x.curPlayer,
-          score: if x.curPlayer do x.score + 0 else x.score end,
-          }} end)
-      newplayers2 = Enum.into(newplayers, %{})
       %{
         clicks: game.clicks,
         tiles: newtiles,
@@ -150,7 +138,7 @@ defmodule Memory.Game do
         card1: nil,
         card2: nil,
         timeout: false,
-        players: newplayers2,
+        players: game.players,
         observers: game.observers,
       }
 
@@ -181,6 +169,14 @@ defmodule Memory.Game do
       }
     end
 
+    def changeTurn(game, score) do
+      Map.put(game, :players, Enum.map(game, :players, fn x ->
+        %{
+          curPlayer: !x.curPlayer,
+          score: if x.curPlayer do x.score + score else x.score end,
+          }
+        end))
+    end
 
   #TODO change player score if match
   def matchOrNot(game, user) do
@@ -253,13 +249,13 @@ end
    def replaceTiles(game, user, tile) do
     firstTile = convert_to_atom(tile)
 
-    pinfo = Map.get(game.players, user, default_player())
+    pinfo = game.players[user]
 
     IO.puts("Debug curplayer")
     IO.puts inspect(game.players)
     IO.puts inspect(pinfo)
 
-    if pinfo.curPlayer do
+    if !pinfo.curPlayer do
       if firstTile.tileStatus != "checked" && !(game.card1 != nil && game.card2 != nil) do
         secondTile = Map.put(firstTile, :tileStatus, "flipped")
         trackclick = game.clicks + 1
